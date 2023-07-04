@@ -1,0 +1,34 @@
+version: '3'
+services:
+  db:
+    build:
+      context: ./etc/docker/postgres
+      dockerfile: Dockerfile
+    environment:
+      - TZ=Europe/Tallinn
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    restart: unless-stopped
+    volumes:
+      - ./etc/docker/postgres/scripts:/docker-entrypoint-initdb.d
+    networks:
+      - pocopay-network
+
+  api:
+    build:
+      context: ./etc/docker/tomcat
+      dockerfile: Dockerfile
+    volumes:
+      - ./build/libs:/app
+    ports:
+      - '8080:8080'
+    restart: unless-stopped
+    depends_on:
+      - db
+    networks:
+      - pocopay-network
+
+networks:
+  pocopay-network:
+    driver: bridge
